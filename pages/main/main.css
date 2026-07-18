@@ -1,0 +1,290 @@
+/* Reset básico e configuração Mobile First */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.container {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Cabeçalho */
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    color: #1a1a2e;
+    font-weight: 700;
+}
+
+/* Cartões de resumo */
+.resumo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.cartao {
+    flex: 1 1 100%;
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+}
+
+.cartao.saldo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+.cartao.receitas {
+    border-left: 4px solid #2ecc71;
+}
+
+.cartao.despesas {
+    border-left: 4px solid #e74c3c;
+}
+
+.rotulo {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+.valor {
+    font-size: 1.4rem;
+    font-weight: 700;
+    word-break: break-all;
+}
+
+.positivo {
+    color: #2ecc71;
+}
+
+.negativo {
+    color: #e74c3c;
+}
+
+/* Ajuste para telas maiores (tablet/desktop) */
+@media (min-width: 600px) {
+    .cartao.saldo {
+        flex: 1 1 100%;
+    }
+    .cartao.receitas,
+    .cartao.despesas {
+        flex: 1;
+    }
+    .resumo {
+        gap: 16px;
+    }
+}
+
+/* Formulário */
+.formulario {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+}
+
+.formulario h2 {
+    font-size: 1.2rem;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.campo {
+    margin-bottom: 14px;
+}
+
+.campo label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.campo input,
+.campo select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fafafa;
+    transition: border 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.campo input:focus,
+.campo select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: #fff;
+}
+
+.btn-adicionar {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    margin-top: 8px;
+}
+
+.btn-adicionar:hover {
+    opacity: 0.9;
+}
+
+.btn-adicionar:active {
+    transform: scale(0.98);
+}
+
+/* Lista de transações */
+.transacoes {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.transacoes h2 {
+    font-size: 1.2rem;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+#listaTransacoes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.item-transacao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.item-transacao:last-child {
+    border-bottom: none;
+}
+
+.info-transacao {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 120px;
+}
+
+.descricao-transacao {
+    font-weight: 600;
+    color: #1a1a2e;
+    font-size: 1rem;
+}
+
+.data-transacao {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 2px;
+}
+
+.valor-transacao {
+    font-weight: 700;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+.valor-transacao.receita {
+    color: #2ecc71;
+}
+
+.valor-transacao.despesa {
+    color: #e74c3c;
+}
+
+.btn-excluir {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    line-height: 1;
+}
+
+.btn-excluir:hover {
+    background: #fde8e8;
+}
+
+.vazio {
+    text-align: center;
+    color: #aaa;
+    padding: 20px 0;
+    font-size: 0.9rem;
+}
+
+/* Animação de entrada */
+.item-transacao {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Ajuste para garantir que o botão de excluir não quebre layout */
+@media (max-width: 380px) {
+    .item-transacao {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .btn-excluir {
+        align-self: flex-end;
+    }
+}
