@@ -1,7 +1,3 @@
-/**
- * Sistema de Login e Cadastro
- * Alterna entre formulários com animação, valida campos e gerencia feedback visual.
- */
 
 (function () {
     'use strict';
