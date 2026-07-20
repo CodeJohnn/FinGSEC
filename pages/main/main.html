@@ -1,68 +1,191 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Controle Financeiro</title>
+
+    <!-- CSS Principal -->
     <link rel="stylesheet" href="main.css">
+
+    <!-- Font Awesome (Ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <!-- Chart.js (Gráficos) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
+
     <div class="container">
-      
+
+        <!-- HEADER (Oculto ou simplificado na imagem do app, mas mantido estruturado) -->
+        <header class="dashboard-header" style="margin-bottom: 20px; padding: 0 4px;">
+            <h1 style="font-size: 1.4rem; font-weight: 700; color: #fff;">FinGSEC</h1>
         </header>
-        <!-- Resumo do saldo -->
+
+        <!-- CARDS DE RESUMO -->
         <section class="resumo">
+
+            <!-- Saldo Total (Ocupa a largura total no mobile) -->
             <div class="cartao saldo">
-                <span class="rotulo">Saldo Total</span>
-                <span class="valor" id="saldoTotal">R$ 0,00</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="rotulo">Saldo Total</span>
+                        <span class="valor" id="saldoTotal">- R$ 20.000,00</span>
+                    </div>
+                    <div class="icone" style="background: rgba(229, 169, 60, 0.1); color: #e5a93c; padding: 10px; border-radius: 10px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
             </div>
+
+            <!-- Receitas (Lado a lado com Despesas) -->
             <div class="cartao receitas">
-                <span class="rotulo">Receitas</span>
-                <span class="valor positivo" id="totalReceitas">R$ 0,00</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="rotulo">Receitas</span>
+                        <span class="valor positivo" id="totalReceitas">R$ 0,00</span>
+                    </div>
+                    <div class="icone" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 10px; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                    </div>
+                </div>
             </div>
+
+            <!-- Despesas (Lado a lado com Receitas) -->
             <div class="cartao despesas">
-                <span class="rotulo">Despesas</span>
-                <span class="valor negativo" id="totalDespesas">R$ 0,00</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="rotulo">Despesas</span>
+                        <span class="valor negativo" id="totalDespesas">R$ 20.000,00</span>
+                    </div>
+                    <div class="icone" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 10px; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                    </div>
+                </div>
             </div>
+
         </section>
 
-        <!-- Formulário para adicionar transação -->
+        <!-- FORMULÁRIO DE NOVA TRANSAÇÃO -->
         <section class="formulario">
+
             <h2>Nova Transação</h2>
+
             <form id="formTransacao">
-                <div class="campo">
-                    <label for="tipo">Tipo</label>
-                    <select id="tipo" required>
-                        <option value="receita">Receita</option>
-                        <option value="despesa">Despesa</option>
-                    </select>
+                
+                <!-- grupo-campos ativa o grid de 2 colunas no mobile para os inputs -->
+                <div class="grupo-campos">
+                    <div class="campo">
+                        <label for="tipo">Tipo</label>
+                        <select id="tipo" required>
+                            <option value="receita">Receita</option>
+                            <option value="despesa" selected>Despesa</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="descricao">Descrição</label>
+                        <input type="text" id="descricao" placeholder="Ex: Salário, Aluguel..." required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="valor">Valor (R$)</label>
+                        <input type="number" id="valor" placeholder="0,00" step="0.01" min="0.01" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="data">Data</label>
+                        <input type="date" id="data" required>
+                    </div>
                 </div>
-                <div class="campo">
-                    <label for="descricao">Descrição</label>
-                    <input type="text" id="descricao" placeholder="Ex: Salário, Aluguel..." required>
-                </div>
-                <div class="campo">
-                    <label for="valor">Valor (R$)</label>
-                    <input type="number" id="valor" placeholder="0,00" step="0.01" min="0.01" required>
-                </div>
-                <div class="campo">
-                    <label for="data">Data</label>
-                    <input type="date" id="data" required>
-                </div>
-                <button type="submit" class="btn-adicionar">Adicionar</button>
+
+                <button class="btn-adicionar" type="submit">
+                    Adicionar Transação
+                </button>
+
             </form>
+
         </section>
 
-        <!-- Lista de transações -->
-        <section class="transacoes">
-            <h2>Transações</h2>
-            <ul id="listaTransacoes">
-                <!-- Itens inseridos via JavaScript -->
-            </ul>
-            <p class="vazio" id="mensagemVazia">Nenhuma transação registrada.</p>
+        <!-- GRÁFICOS (Alinhados em coluna única perfeita para Mobile) -->
+        <section class="graficos">
+
+            <div class="grafico-card">
+                <h2>Receitas x Despesas</h2>
+                <canvas id="graficoBarras"></canvas>
+            </div>
+
+            <div class="grafico-card">
+                <h2>Saldo Mensal</h2>
+                <canvas id="graficoLinha"></canvas>
+            </div>
+
         </section>
+
+        <!-- LISTA DE TRANSAÇÕES -->
+        <section class="transacoes">
+
+            <div class="transacoes-header">
+                <h2>Transações Recentes</h2>
+                <a href="#" class="ver-todas">Ver todas <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></a>
+            </div>
+
+            <ul id="listaTransacoes">
+                <!-- Modelo de como o JS deve renderizar cada item para ficar igual à foto -->
+                <li class="item-transacao">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-arrow-down" style="font-size: 0.85rem;"></i>
+                        </div>
+                        <div class="info-transacao">
+                            <span class="descricao-transacao">aluguel</span>
+                            <span class="data-transacao">20/07/2026</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="valor-transacao despesa">- R$ 10.000,00</span>
+                        <button class="btn-excluir"><i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i></button>
+                    </div>
+                </li>
+                
+                <li class="item-transacao">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-arrow-down" style="font-size: 0.85rem;"></i>
+                        </div>
+                        <div class="info-transacao">
+                            <span class="descricao-transacao">aluguel</span>
+                            <span class="data-transacao">20/07/2026</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="valor-transacao despesa">- R$ 10.000,00</span>
+                        <button class="btn-excluir"><i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i></button>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- Mensagem caso não tenha nada (Controlada via JS) -->
+            <p class="vazio" id="mensagemVazia" style="display: none;">
+                Nenhuma transação registrada.
+            </p>
+
+        </section>
+
+        <!-- FOOTER DA IMAGEM -->
+        <footer style="display: flex; justify-content: space-between; align-items: center; padding: 20px 4px; color: #666; font-size: 0.75rem;">
+            <span><i class="fa-regular fa-shield-check" style="color: #e5a93c; margin-right: 4px;"></i> Suas finanças, seu futuro.</span>
+            <span style="color: #e5a93c; opacity: 0.8;">Controle hoje, conquiste amanhã.</span>
+        </footer>
+
     </div>
 
+    <!-- Script Principal -->
     <script src="main.js"></script>
+
 </body>
+
 </html>
