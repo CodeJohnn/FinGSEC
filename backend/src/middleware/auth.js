@@ -1,34 +1,12 @@
-import jwt from "jsonwebtoken";
-
-export default function (req, res, next) {
-
-    const auth = req.headers.authorization;
-
-    if (!auth)
-
-        return res.status(401).json({
-            erro: "Sem token"
-        });
-
-    const token = auth.split(" ")[1];
-
+﻿import { createSupabase } from '../database/supabase.js';
+export default async function auth(req, res, next) {
+    const match = /^Bearer (\S+)$/i.exec(req.headers.authorization || '');
+    if (!match) return res.status(401).json({ erro: 'Autenticação necessária.' });
     try {
-
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
-
-        req.user = decoded;
-
-        next();
-
-    } catch {
-
-        return res.status(401).json({
-            erro: "Token inválido"
-        });
-
-    }
-
+        req.db = createSupabase(match[1]);
+        const { data, error } = await req.db.auth.getUser(match[1]);
+        if (error || !data.user) return res.status(401).json({ erro: 'Sessão inválida ou expirada.' });
+        req.user = data.user;
+        return next();
+    } catch (error) { return next(error); }
 }

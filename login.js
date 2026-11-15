@@ -12,6 +12,7 @@
 
     const goToCadastroBtn = document.getElementById('goToCadastro');
     const goToLoginBtn = document.getElementById('goToLogin');
+    try { document.querySelector('.login-options input').checked = localStorage.getItem('fingsec_remember') === 'true'; } catch {}
     const fields = {
         loginEmail: ['E-mail', 'email'], loginPassword: ['Senha', 'current-password'],
         cadastroNome: ['Nome completo', 'name'], cadastroEmail: ['E-mail', 'email'],
@@ -27,7 +28,15 @@
     const recovery = document.querySelector('.login-options a');
     recovery.addEventListener('click', event => {
         event.preventDefault();
-        setError('loginPassword', 'O modo local ainda não possui recuperação de senha.');
+        const email = document.getElementById('loginEmail').value.trim();
+        if (!isValidEmail(email)) return setError('loginEmail', 'Informe seu e-mail para recuperar a senha.');
+        (async () => {
+            try {
+                const { error } = await window.FinCloud.connection().auth.resetPasswordForEmail(email, { redirectTo: new URL('index.html', window.location.href).href });
+                if (error) throw error;
+                setError('loginPassword', 'Se houver uma conta, você receberá o link de recuperação.');
+            } catch { setError('loginPassword', 'Não foi possível solicitar a recuperação. Confira a configuração e tente novamente.'); }
+        })();
     });
 
     // ===== TOGGLE FORMS =====
@@ -190,36 +199,61 @@
         return valid;
     }
 
-    // ===== SUBMIT LOGIN =====
-    loginForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+    // Os dados de acesso são enviados somente ao Supabase Auth.
+    loginForm.addEventListener('submit', async event => {
+        event.preventDefault();
         if (!validateLogin()) return;
-
-        // Simula login bem-sucedido → redireciona
-        window.location.href = 'pages/main/main.html';
+        const button = loginForm.querySelector('button[type="submit"]');
+        if (button.disabled) return; button.disabled = true;
+        try {
+            localStorage.setItem('fingsec_remember', String(document.querySelector('.login-options input').checked));
+            const { error } = await window.FinCloud.connection().auth.signInWithPassword({ email: document.getElementById('loginEmail').value.trim(), password: document.getElementById('loginPassword').value });
+            if (error) throw new Error('E-mail ou senha inválidos, ou e-mail ainda não confirmado.');
+            window.location.href = 'pages/main/main.html';
+        } catch (error) { setError('loginPassword', error.message); }
+        finally { button.disabled = false; }
     });
-
-    // ===== SUBMIT CADASTRO =====
-    cadastroForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+    cadastroForm.addEventListener('submit', async event => {
+        event.preventDefault();
         if (!validateCadastro()) return;
-
-        // Armazena nome do usuário e mostra mensagem de sucesso
-        const nome = document.getElementById('cadastroNome').value.trim();
-        try { localStorage.setItem('usuarioNome', nome); } catch (err) { /* storage pode estar desabilitado */ }
-
-        // Cadastro bem-sucedido → mostra mensagem de sucesso e volta ao login
-        showForm('success');
-
-        setTimeout(() => {
-            showForm('login');
-            // Limpa os campos do cadastro
+        const button = cadastroForm.querySelector('button[type="submit"]');
+        if (button.disabled) return; button.disabled = true;
+        try {
+            const { data, error } = await window.FinCloud.connection().auth.signUp({
+                email: document.getElementById('cadastroEmail').value.trim(), password: document.getElementById('cadastroPassword').value,
+                options: { data: { nome: document.getElementById('cadastroNome').value.trim() }, emailRedirectTo: new URL('index.html', window.location.href).href }
+            });
+            if (error) throw new Error('Não foi possível cadastrar. Confira os dados e tente novamente.');
+            if (data.session) { window.location.href = 'pages/main/main.html'; return; }
+            showForm('success');
+            successMsg.querySelector('p').textContent = 'Confira seu e-mail para confirmar o cadastro.';
             cadastroForm.reset();
-            clearAllErrors();
-        }, 2000);
+            setTimeout(() => showForm('login'), 5000);
+        } catch (error) { setError('cadastroEmail', error.message); }
+        finally { button.disabled = false; }
+    });
+    try {
+        window.FinCloud.connection().auth.onAuthStateChange(event => {
+            if (event === 'PASSWORD_RECOVERY') {
+                document.getElementById('passwordReset').hidden = false;
+                [formLogin, formCadastro, successMsg].forEach(el => el.style.display = 'none');
+            }
+        });
+    } catch (error) { setError('loginPassword', error.message); }
+    document.getElementById('resetPasswordForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = event.target.querySelector('button'); button.disabled = true;
+        const status = document.getElementById('resetStatus');
+        try {
+            const { error } = await window.FinCloud.connection().auth.updateUser({ password: document.getElementById('newPassword').value });
+            if (error) throw error;
+            await window.FinCloud.signOut();
+            window.location.replace('index.html');
+        } catch { status.textContent = 'Não foi possível atualizar a senha. Solicite um novo link.'; }
+        finally { button.disabled = false; }
     });
 
-    // ===== VALIDAÇÃO EM TEMPO REAL (opcional) =====
+    // Validação ao sair do campo.
     // Aciona validação ao sair do campo (blur) para feedback imediato
     document.querySelectorAll('.input-wrapper input').forEach(input => {
         input.addEventListener('blur', function () {

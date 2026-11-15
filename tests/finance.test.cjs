@@ -9,7 +9,7 @@ function harness() {
     const document = { addEventListener() {}, getElementById(id) { if (!elements.has(id)) elements.set(id, { value: '', textContent: '', style: {}, classList: { toggle() {} } }); return elements.get(id); } };
     const context = vm.createContext({ console, document, localStorage: { getItem: k => store.get(k) ?? null, setItem: (k,v) => store.set(k,v) }, setTimeout() {}, clearTimeout() {}, window: { confirm: () => true } });
     vm.runInContext(source.replace("document.addEventListener('DOMContentLoaded', initializePage);", 'globalThis.api = { Data, Storage, moneyToCents, sumTransactions, addMonths, dateToISO, today, updateSummary, transactionDateRange, updateBill, getUpcomingItems };'), context);
-    return { ...context.api, elements, store };
+    return { ...context.api, elements, store, window: context.window };
 }
 test('soma em centavos e arredonda corretamente valores monetários', () => {
     const h = harness();
@@ -41,18 +41,18 @@ test('todos os elementos referenciados existem no HTML', () => {
     for (const [,id] of source.matchAll(/byId\('([^']+)'\)/g)) assert.ok(ids.has(id), `Elemento ausente: ${id}`);
     assert.equal([...html.matchAll(/id="([^"]+)"/g)].length, ids.size, 'IDs duplicados');
 });
-test('dados inválidos são protegidos contra sobrescrita', () => {
+test('dados inválidos são protegidos contra sobrescrita', async () => {
     const h = harness(); h.store.set('fingsec_metas', '{"invalido":true}');
     h.Data.init();
     assert.equal(h.Storage.blocked, true);
-    assert.equal(h.Storage.write('fingsec_metas', []), false);
+    assert.equal(await h.Storage.write('fingsec_metas', []), false);
     assert.equal(h.store.get('fingsec_metas'), '{"invalido":true}');
 });
-test('quitar uma conta registra uma única movimentação', () => {
+test('quitar uma conta registra uma única movimentação', async () => {
     const h = harness(); h.Data.init();
     h.Data.bills = [{id:'conta1',descricao:'Internet',valor:99.9,tipo:'despesa',vencimento:h.dateToISO(h.today()),paga:false}];
-    h.updateBill('conta1','paga',true);
-    h.updateBill('conta1','paga',true);
+    await h.updateBill('conta1','paga',true);
+    await h.updateBill('conta1','paga',true);
     assert.equal(h.Data.transactions.length,1);
     assert.equal(h.Data.transactions[0].valor,99.9);
     assert.equal(h.Data.bills[0].paga,true);
@@ -63,4 +63,22 @@ test('recorrências preservam vencimentos não confirmados', () => {
     assert.equal(h.getUpcomingItems()[0].data,'2024-02-29');
     h.Data.transactions.push({id:2,recorrenciaId:1,tipo:'despesa',valor:50,data:'2024-02-29'});
     assert.equal(h.getUpcomingItems()[0].data,'2024-03-31');
+});
+test('quitação na nuvem salva conta e transação em uma operação', async () => {
+    const h = harness(); h.Data.init();
+    h.Data.bills = [{ id:'bill', descricao:'Luz', tipo:'despesa', valor:100, vencimento:'2026-11-15', paga:false }];
+    const calls = [];
+    h.window.FinCloud = { writeFields: async next => { calls.push(next); } };
+    await h.updateBill('bill', 'paga', true);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].bills[0].paga, true);
+    assert.equal(calls[0].transactions.length, 1);
+});
+test('falha na quitação mantém conta e transações intactas', async () => {
+    const h = harness(); h.Data.init();
+    h.Data.bills = [{ id:'bill', descricao:'Luz', tipo:'despesa', valor:100, vencimento:'2026-11-15', paga:false }];
+    h.window.FinCloud = { writeFields: async () => { throw new Error('offline'); } };
+    await h.updateBill('bill', 'paga', true);
+    assert.equal(h.Data.bills[0].paga, false);
+    assert.equal(h.Data.transactions.length, 0);
 });

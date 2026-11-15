@@ -34,6 +34,7 @@
 
         read(key, fallback) {
             try {
+                if (window.FinCloud) return window.FinCloud.read(key, fallback);
                 const raw = localStorage.getItem(key);
                 return raw ? JSON.parse(raw) : fallback;
             } catch (error) {
@@ -43,14 +44,15 @@
             }
         },
 
-        write(key, value) {
+        async write(key, value) {
             if (this.blocked) return false;
             try {
-                localStorage.setItem(key, JSON.stringify(value));
+                if (window.FinCloud) await window.FinCloud.write(key, value);
+                else localStorage.setItem(key, JSON.stringify(value));
                 return true;
             } catch (error) {
                 console.error(`Não foi possível salvar ${key}:`, error);
-                toast('Não foi possível salvar. Verifique o espaço disponível no navegador.', true);
+                toast(window.FinCloud ? error.message : 'Falha ao salvar no navegador.', true);
                 return false;
             }
         }
@@ -93,14 +95,14 @@
             return {};
         },
 
-        saveTransactions(next) {
-            if (!Storage.write(TRANSACTION_KEY, next)) return false;
+        async saveTransactions(next) {
+            if (!await Storage.write(TRANSACTION_KEY, next)) return false;
             this.transactions = next;
             return true;
         },
 
-        saveCollection(property, key, next) {
-            if (!Storage.write(key, next)) return false;
+        async saveCollection(property, key, next) {
+            if (!await Storage.write(key, next)) return false;
             this[property] = next;
             return true;
         },
@@ -701,7 +703,7 @@
         renderCategoryOptions(type, selected);
     }
 
-    function addTransaction(event) {
+    async function addTransaction(event) {
         event.preventDefault();
         if (!byId('formTransacao').reportValidity()) return;
 
@@ -721,7 +723,7 @@
             const next = Data.transactions.map(transaction => transaction.id === editingId
                 ? { ...transaction, tipo: type, descricao: description, valor: moneyToCents(amount) / 100, data: date, categoria: category, natureza, observacao: note }
                 : transaction);
-            if (!Data.saveTransactions(next)) return;
+            if (!await Data.saveTransactions(next)) return;
             closeTransactionModal();
             renderAll();
             toast('Transação atualizada.');
@@ -754,22 +756,22 @@
                 categoria: category, natureza, observacao: note, ...(recurring ? { recorrente: true } : {})
             });
         }
-        if (!Data.saveTransactions(next)) return;
+        if (!await Data.saveTransactions(next)) return;
         closeTransactionModal();
         renderAll();
         toast(installments > 1 ? `${installments} parcelas adicionadas ao histórico.` : 'Transação adicionada.');
     }
 
-    function deleteTransaction(id) {
+    async function deleteTransaction(id) {
         const transaction = Data.transactions.find(item => item.id === id);
         if (!transaction || !window.confirm(`Excluir a transação "${transactionLabel(transaction)}"?`)) return;
         const next = Data.transactions.filter(item => item.id !== id);
-        if (!Data.saveTransactions(next)) return;
+        if (!await Data.saveTransactions(next)) return;
         renderAll();
         toast('Transação excluída.');
     }
 
-    function createCategory(event) {
+    async function createCategory(event) {
         event.preventDefault();
         const input = byId('newCategoryName');
         const name = input.value.trim().replace(/\s+/g, ' ');
@@ -779,13 +781,13 @@
             return;
         }
         const next = [...Data.customCategories, name];
-        if (!Data.saveCollection('customCategories', KEYS.categories, next)) return;
+        if (!await Data.saveCollection('customCategories', KEYS.categories, next)) return;
         input.value = '';
         renderAll();
         toast('Categoria criada.');
     }
 
-    function deleteCategory(name) {
+    async function deleteCategory(name) {
         const used = Data.transactions.some(transaction => Data.categoryFor(transaction) === name);
         if (used) {
             toast('Esta categoria está em uso por uma transação e não pode ser removida.', true);
@@ -793,12 +795,12 @@
         }
         if (!window.confirm(`Excluir a categoria "${name}"?`)) return;
         const next = Data.customCategories.filter(category => category !== name);
-        if (!Data.saveCollection('customCategories', KEYS.categories, next)) return;
+        if (!await Data.saveCollection('customCategories', KEYS.categories, next)) return;
         renderAll();
         toast('Categoria excluída.');
     }
 
-    function saveBudget(button) {
+    async function saveBudget(button) {
         const row = button.closest('.budget-row');
         const amount = Number(row.querySelector('input').value);
         const category = button.dataset.category;
@@ -808,12 +810,12 @@
         }
         const key = monthKey(today());
         const next = { ...Data.budgets, [key]: { ...(Data.budgets[key] || {}), [category]: Math.round(amount * 100) / 100 } };
-        if (!Data.saveCollection('budgets', KEYS.budgets, next)) return;
+        if (!await Data.saveCollection('budgets', KEYS.budgets, next)) return;
         renderBudgets();
         toast(`Orçamento de ${category} atualizado.`);
     }
 
-    function createBill(event) {
+    async function createBill(event) {
         event.preventDefault();
         if (!byId('billForm').reportValidity()) return;
         const amount = Number(byId('billAmount').value);
@@ -830,7 +832,7 @@
             paga: false
         };
         const next = [...Data.bills, bill];
-        if (!Data.saveCollection('bills', KEYS.bills, next)) return;
+        if (!await Data.saveCollection('bills', KEYS.bills, next)) return;
         byId('billForm').reset();
         byId('billDueDate').value = dateToISO(today());
         renderBills();
@@ -838,26 +840,41 @@
         toast('Conta adicionada ao planejamento.');
     }
 
-    function updateBill(id, property, value) {
+    async function updateBill(id, property, value) {
+        if (window.FinCloud && property === 'paga') {
+            const bill = Data.bills.find(item => item.id === id);
+            if (!bill || bill.paga) return;
+            const bills = Data.bills.map(item => item.id === id ? { ...item, paga: true } : item);
+            const transactions = Data.transactions.some(t => t.contaId === id) ? Data.transactions : [...Data.transactions, {
+                id: newId(), contaId: id, descricao: bill.descricao, tipo: bill.tipo, valor: bill.valor,
+                data: dateToISO(today()), categoria: 'Contas'
+            }];
+            try {
+                await window.FinCloud.writeFields({ bills, transactions });
+                Data.bills = bills; Data.transactions = transactions;
+                renderAll(); toast('Conta atualizada.');
+            } catch (error) { toast(error.message, true); }
+            return;
+        }
         if (property === 'paga') {
             const bill = Data.bills.find(item => item.id === id);
             if (!bill || bill.paga) return;
             if (!Data.transactions.some(t => t.contaId === id)) {
                 const transaction = { id: newId(), contaId: id, descricao: bill.descricao, tipo: bill.tipo, valor: bill.valor, data: dateToISO(today()), categoria: 'Contas' };
-                if (!Data.saveTransactions([...Data.transactions, transaction])) return;
+                if (!await Data.saveTransactions([...Data.transactions, transaction])) return;
             }
         }
         const next = property === 'delete'
             ? Data.bills.filter(bill => bill.id !== id)
             : Data.bills.map(bill => bill.id === id ? { ...bill, [property]: value } : bill);
-        if (!Data.saveCollection('bills', KEYS.bills, next)) return;
+        if (!await Data.saveCollection('bills', KEYS.bills, next)) return;
         renderBills();
         renderUpcoming();
         if (property === 'paga') renderAll();
         toast(property === 'paga' ? 'Conta atualizada.' : 'Conta excluída.');
     }
 
-    function createGoal(event) {
+    async function createGoal(event) {
         event.preventDefault();
         if (!byId('goalForm').reportValidity()) return;
         const target = Number(byId('goalTarget').value);
@@ -870,14 +887,14 @@
             id: newId(), nome: byId('goalName').value.trim(),
             alvo: Math.round(target * 100) / 100, guardado: Math.round(saved * 100) / 100
         }];
-        if (!Data.saveCollection('goals', KEYS.goals, next)) return;
+        if (!await Data.saveCollection('goals', KEYS.goals, next)) return;
         byId('goalForm').reset();
         byId('goalSaved').value = '0';
         renderGoals();
         toast('Meta criada. Um passo de cada vez!');
     }
 
-    function contributeToGoal(button) {
+    async function contributeToGoal(button) {
         const input = button.parentElement.querySelector('input');
         const contribution = Number(input.value);
         if (!Number.isFinite(contribution) || contribution <= 0) {
@@ -887,15 +904,15 @@
         const next = Data.goals.map(goal => goal.id === button.dataset.id
             ? { ...goal, guardado: Math.round((moneyToCents(goal.guardado) + moneyToCents(contribution)) / 100 * 100) / 100 }
             : goal);
-        if (!Data.saveCollection('goals', KEYS.goals, next)) return;
+        if (!await Data.saveCollection('goals', KEYS.goals, next)) return;
         renderGoals();
         toast('Progresso da meta atualizado.');
     }
 
-    function deleteGoal(id) {
+    async function deleteGoal(id) {
         if (!window.confirm('Excluir esta meta financeira?')) return;
         const next = Data.goals.filter(goal => goal.id !== id);
-        if (!Data.saveCollection('goals', KEYS.goals, next)) return;
+        if (!await Data.saveCollection('goals', KEYS.goals, next)) return;
         renderGoals();
         toast('Meta excluída.');
     }
@@ -918,7 +935,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function handleAction(event) {
+    async function handleAction(event) {
         const actionButton = event.target.closest('[data-action]');
         if (!actionButton) return;
         switch (actionButton.dataset.action) {
@@ -928,7 +945,7 @@
                 if (!source || Data.transactions.some(t => t.recorrenciaId === source.id && t.data === date)) break;
                 if (!window.confirm(`Registrar ${source.descricao} em ${formatDate(date)}?`)) break;
                 const next = { ...source, id: newId(), data: date, recorrente: false, recorrenciaId: source.id };
-                if (Data.saveTransactions([...Data.transactions, next])) { renderAll(); toast('Recorrência registrada.'); }
+                if (await Data.saveTransactions([...Data.transactions, next])) { renderAll(); toast('Recorrência registrada.'); }
                 break;
             }
             case 'new-transaction':
@@ -1029,16 +1046,25 @@
             link.href = url; link.download = `fingsec-${dateToISO(today())}.json`; link.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         });
-        byId('privacyToggle').addEventListener('change', event => {
-            document.body.classList.toggle('privacy-mode', event.target.checked);
+        byId('privacyToggle').addEventListener('change', async event => {
             const next = { ...Data.settings, privacy: event.target.checked };
-            if (Storage.write(KEYS.settings, next)) Data.settings = next;
+            if (await Storage.write(KEYS.settings, next)) {
+                Data.settings = next;
+                document.body.classList.toggle('privacy-mode', next.privacy);
+            } else event.target.checked = Boolean(Data.settings.privacy);
         });
-        byId('nameForm').addEventListener('submit', event => {
+        byId('signOut').addEventListener('click', async () => {
+            try { await window.FinCloud.signOut(); } catch (error) { toast(error.message, true); }
+        });
+        byId('importLegacy').addEventListener('click', async () => {
+            try { if (await window.FinCloud.importLegacy()) window.location.reload(); }
+            catch (error) { toast(error.message, true); }
+        });
+        byId('nameForm').addEventListener('submit', async event => {
             event.preventDefault();
             const name = byId('nameInput').value.trim();
             const next = { ...Data.settings, name };
-            if (!Storage.write(KEYS.settings, next)) return;
+            if (!await Storage.write(KEYS.settings, next)) return;
             Data.settings = next;
             renderUserName();
             toast('Nome atualizado.');
@@ -1048,7 +1074,7 @@
     function renderUserName() {
         let legacyName = '';
         try {
-            legacyName = localStorage.getItem('usuarioNome') || '';
+            legacyName = window.FinCloud ? '' : localStorage.getItem('usuarioNome') || '';
         } catch (error) {
             console.error('Não foi possível ler o nome salvo:', error);
         }
@@ -1059,12 +1085,26 @@
         byId('nameInput').value = Data.settings.name || '';
     }
 
-    function initializePage() {
+    async function initializePage() {
         Object.assign(elements, {
             transactionForm: byId('formTransacao'),
             transactionList: byId('listaTransacoes')
         });
+        if (!window.FinCloud) {
+            byId('cloudStatus').textContent = 'Não foi possível carregar a conexão com o servidor. Atualize a página.';
+            document.querySelectorAll('button, input, select').forEach(el => { el.disabled = true; });
+            return;
+        }
+        if (window.FinCloud) {
+            try { if (!await window.FinCloud.load()) return; }
+            catch (error) {
+                byId('cloudStatus').textContent = error.message;
+                document.querySelectorAll('button, input, select').forEach(el => { el.disabled = true; });
+                toast(error.message, true); return;
+            }
+        }
         Data.init();
+        if (window.FinCloud) byId('cloudStatus').textContent = 'Conectado ao servidor';
         const now = today();
         const hour = new Date().getHours();
         const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -1078,6 +1118,9 @@
             document.body.classList.add('privacy-mode');
         }
         bindEvents();
+        window.addEventListener('beforeunload', event => {
+            if (window.FinCloud.busy) { event.preventDefault(); event.returnValue = ''; }
+        });
         renderAll();
         if (Storage.blocked) toast('Alguns dados não puderam ser lidos. Eles não serão sobrescritos.', true);
     }

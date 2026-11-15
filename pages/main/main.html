@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="main.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js" defer></script>
+    <script src="../../supabase-config.js" defer></script>
+    <script src="../../cloud.js" defer></script>
     <script src="main.js" defer></script>
 </head>
 
@@ -51,6 +54,7 @@
             </header>
 
             <div class="page-content">
+                <p id="cloudStatus" class="cloud-status" role="status">Conectando ao servidor...</p>
                 <section class="view-panel active" id="view-dashboard" aria-labelledby="pageTitle">
                     <div class="page-heading">
                         <div>
@@ -143,7 +147,7 @@
                             </table>
                             <div class="empty-state" id="transactionEmpty"><span class="empty-icon"><i class="fa-solid fa-magnifying-glass"></i></span><strong>Nenhuma transação encontrada</strong><span>Experimente ajustar os filtros ou adicione uma movimentação.</span></div>
                         </div>
-                        <div class="table-footer"><span id="transactionResults">0 transações</span><span>Dados salvos neste dispositivo</span></div>
+                        <div class="table-footer"><span id="transactionResults">0 transações</span><span>Dados salvos na sua conta</span></div>
                     </article>
                 </section>
 
@@ -185,7 +189,9 @@
                     <div class="page-heading"><div><span class="eyebrow">PREFERÊNCIAS</span><h1>Configurações</h1><p>Personalize sua experiência no FinGSEC.</p></div></div>
                     <article class="panel settings-panel"><div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-user"></i></div><div class="setting-copy"><strong>Como podemos chamar você?</strong><span>Seu nome aparece na saudação do painel.</span></div><form id="nameForm" class="setting-control"><input id="nameInput" type="text" maxlength="40" placeholder="Seu nome"><button class="button button-secondary" type="submit">Salvar</button></form></div>
                         <div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-eye-slash"></i></div><div class="setting-copy"><strong>Ocultar valores</strong><span>Esconda os valores financeiros na tela.</span></div><label class="toggle-control"><input id="privacyToggle" type="checkbox"><span class="toggle-track"></span></label></div>
-                        <div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="setting-copy"><strong>Seus dados ficam no dispositivo</strong><span>As transações ficam neste navegador. Exporte uma cópia para guardar seu histórico.</span></div><button class="button button-secondary" id="exportData" type="button">Exportar dados</button></div>
+                        <div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="setting-copy"><strong>Seus dados na sua conta</strong><span>Alterações confirmadas são salvas no servidor. Exporte uma cópia quando precisar.</span></div><button class="button button-secondary" id="exportData" type="button">Exportar dados</button></div>
+                        <div class="setting-row"><div class="setting-copy"><strong>Dados antigos deste navegador</strong><span>Importe apenas em uma conta vazia. Os arquivos locais permanecem intactos.</span></div><button class="button button-secondary" id="importLegacy" type="button">Importar dados locais</button></div>
+                        <div class="setting-row"><div class="setting-copy"><strong>Sessão</strong><span>Encerre o acesso neste navegador.</span></div><button class="button button-secondary" id="signOut" type="button">Sair da conta</button></div>
                     </article>
                 </section>
 

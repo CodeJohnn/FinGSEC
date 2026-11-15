@@ -440,6 +440,8 @@ body.privacy-mode .summary-value, body.privacy-mode .transaction-amount, body.pr
 
 /* Composição: saldo em destaque, indicadores de apoio e área de análise. */
 .mobile-brand { display: none; }
+#cloudStatus { margin: 0 0 20px; color: var(--muted); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+button:disabled { opacity: .55; cursor: wait; }
 .sidebar { width: 224px; padding: 24px 14px 18px; background: #080808; }
 .brand { justify-content: center; margin: 0 0 25px; }
 .brand-logo { display: block; width: 168px; height: auto; object-fit: contain; }

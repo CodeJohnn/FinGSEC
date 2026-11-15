@@ -47,7 +47,7 @@
                     <button class="btn btn-primary" type="submit">Entrar</button>
                 </form>
 
-                <p class="local-notice">Modo local: seus dados financeiros ficam neste navegador. O acesso atual ainda não utiliza autenticação.</p>
+                <p class="local-notice">Acesse sua conta para salvar seus dados no servidor.</p>
 
                 <div class="social-login" hidden>
                     <button><i class="fab fa-google"></i></button>
@@ -114,6 +114,7 @@
                 </p>
             </div>
 
+            <section id="passwordReset" hidden><h1 class="auth-title">Nova senha</h1><form id="resetPasswordForm"><label for="newPassword">Escolha uma senha</label><div class="input-wrapper"><input id="newPassword" type="password" minlength="6" maxlength="128" required autocomplete="new-password"></div><p id="resetStatus" role="status"></p><button class="btn btn-primary" type="submit">Salvar senha</button></form></section>
             <!-- SUCESSO -->
             <div id="successMessage" class="success-message">
                 <i class="fas fa-circle-check"></i>
@@ -122,6 +123,9 @@
 
         </div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="cloud.js"></script>
     <script src="login.js"></script>
 </body>
 
