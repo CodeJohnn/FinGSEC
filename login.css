@@ -7,14 +7,19 @@ body { margin: 0; min-height: 100svh; padding: 32px 20px; display: grid; place-i
 .intro-active { overflow: hidden; }
 .intro-active .auth-container, .intro-active .finance-motion-control { visibility: hidden; }
 .brand-intro-content { display: grid; justify-items: center; width: min(75vw, 340px); }
-.brand-intro-logo { display: block; width: 100%; height: auto; object-fit: contain; animation: brand-arrival 1.2s cubic-bezier(.16,1,.3,1) both; }
-.brand-intro-rule { width: 72px; height: 1px; margin-top: 20px; background: var(--fin-gold); transform-origin: left; animation: brand-rule 1s .55s ease both; }
+.brand-intro-emblem { position: relative; width: 100%; overflow: hidden; isolation: isolate; animation: brand-arrival 1.1s .12s cubic-bezier(.16,1,.3,1) both; }
+.brand-intro-logo { display: block; width: 100%; height: auto; object-fit: contain; }
+/* Color-dodge deixa o preto intacto e ilumina apenas os detalhes da imagem. */
+.brand-intro-emblem::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 32%, #a87b26 46%, #f4d587 50%, #a87b26 54%, transparent 68%); mix-blend-mode: color-dodge; opacity: 0; transform: translateX(-115%); animation: brand-reflection .85s .85s cubic-bezier(.4,0,.2,1) both; }
+.brand-intro-name { margin-top: 12px; color: var(--fin-text); font: 500 clamp(20px, 5vw, 25px)/1.3 var(--fin-font); letter-spacing: .12em; animation: brand-name .65s 1.3s ease both; }
+.brand-intro-name > span { color: var(--fin-gold); }
 .brand-intro-skip { position: absolute; bottom: max(32px, env(safe-area-inset-bottom)); padding: 10px 14px; background: transparent; border: 0; color: var(--fin-muted); font: 12px var(--fin-font); cursor: pointer; }
 .brand-intro-skip span { margin-left: 10px; color: var(--fin-gold); }
 .intro-leaving .brand-intro { opacity: 0; pointer-events: none; transition: opacity .4s ease; }
 .intro-leaving .auth-container { animation: login-arrival .4s ease both; }
-@keyframes brand-arrival { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
-@keyframes brand-rule { from { opacity: 0; transform: scaleX(0); } to { opacity: .7; transform: scaleX(1); } }
+@keyframes brand-arrival { from { opacity: 0; transform: translateY(8px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes brand-reflection { 0% { opacity: 0; transform: translateX(-115%); } 20%, 75% { opacity: .24; } 100% { opacity: 0; transform: translateX(115%); } }
+@keyframes brand-name { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
 @keyframes login-arrival { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .auth-card { width: 100%; }
 .top-login { display: flex; justify-content: center; margin-bottom: 26px; }
