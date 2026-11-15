@@ -1,0 +1,22 @@
+{
+  "name": "fingsec",
+  "version": "1.0.0",
+  "description": "Backend do FinGSEC",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codejohnn/FinGSEC.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/codejohnn/FinGSEC/issues"
+  },
+  "homepage": "https://github.com/codejohnn/FinGSEC#readme"
+}
