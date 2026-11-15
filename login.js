@@ -12,6 +12,23 @@
 
     const goToCadastroBtn = document.getElementById('goToCadastro');
     const goToLoginBtn = document.getElementById('goToLogin');
+    const fields = {
+        loginEmail: ['E-mail', 'email'], loginPassword: ['Senha', 'current-password'],
+        cadastroNome: ['Nome completo', 'name'], cadastroEmail: ['E-mail', 'email'],
+        cadastroPassword: ['Crie uma senha', 'new-password'], cadastroConfirm: ['Confirme a senha', 'new-password']
+    };
+    Object.entries(fields).forEach(([id, [label, autocomplete]]) => {
+        const input = document.getElementById(id);
+        input.setAttribute('aria-label', label);
+        input.setAttribute('autocomplete', autocomplete);
+        input.setAttribute('aria-describedby', id + 'Error');
+    });
+    document.querySelectorAll('.toggle-password').forEach(button => button.setAttribute('aria-label', 'Mostrar ou ocultar senha'));
+    const recovery = document.querySelector('.login-options a');
+    recovery.addEventListener('click', event => {
+        event.preventDefault();
+        setError('loginPassword', 'O modo local ainda não possui recuperação de senha.');
+    });
 
     // ===== TOGGLE FORMS =====
     function showForm(formToShow) {
@@ -68,6 +85,7 @@
         const errorSpan = document.getElementById(inputId + 'Error');
         if (errorSpan) {
             errorSpan.textContent = message;
+            document.getElementById(inputId)?.setAttribute('aria-invalid', 'true');
         }
     }
 
@@ -75,6 +93,7 @@
         const errorSpan = document.getElementById(inputId + 'Error');
         if (errorSpan) {
             errorSpan.textContent = '';
+            document.getElementById(inputId)?.removeAttribute('aria-invalid');
         }
     }
 

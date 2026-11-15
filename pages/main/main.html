@@ -3,189 +3,220 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Controle Financeiro</title>
-
-    <!-- CSS Principal -->
-    <link rel="stylesheet" href="main.css">
-
-    <!-- Font Awesome (Ícones) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#11120f">
+    <meta name="description" content="Organize suas finanças com clareza.">
+    <title>FinGSEC | Visão geral</title>
+    <link rel="stylesheet" href="../../theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-
-    <!-- Chart.js (Gráficos) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="main.js" defer></script>
 </head>
 
 <body>
+    <div class="app-shell">
+        <aside class="sidebar" aria-label="Navegação principal">
+            <a class="brand" href="#dashboard" data-view="dashboard" aria-label="FinGSEC, início">
+                <img class="brand-logo" src="../../assets/img/baner.png" alt="FinGSEC">
+            </a>
 
-    <div class="container">
+            <span class="nav-caption">MENU PRINCIPAL</span>
+            <nav class="main-nav">
+                <button class="nav-link active" type="button" data-view="dashboard"><i class="fa-solid fa-table-cells-large"></i><span>Visão geral</span></button>
+                <button class="nav-link" type="button" data-view="transactions"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Transações</span><span class="nav-count" id="transactionCount">0</span></button>
+                <button class="nav-link" type="button" data-view="categories"><i class="fa-solid fa-shapes"></i><span>Categorias</span></button>
+                <button class="nav-link" type="button" data-view="planning"><i class="fa-regular fa-calendar-check"></i><span>Planejamento</span></button>
+                <button class="nav-link" type="button" data-view="goals"><i class="fa-solid fa-bullseye"></i><span>Metas financeiras</span></button>
+                <button class="nav-link" type="button" data-view="settings"><i class="fa-solid fa-sliders"></i><span>Configurações</span></button>
+            </nav>
 
-        <!-- HEADER (Oculto ou simplificado na imagem do app, mas mantido estruturado) -->
-        <header class="dashboard-header" style="margin-bottom: 20px; padding: 0 4px;">
-            <h1 style="font-size: 1.4rem; font-weight: 700; color: #fff;">FinGSEC</h1>
-        </header>
-
-        <!-- CARDS DE RESUMO -->
-        <section class="resumo">
-
-            <!-- Saldo Total (Ocupa a largura total no mobile) -->
-            <div class="cartao saldo">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span class="rotulo">Saldo Total</span>
-                        <span class="valor" id="saldoTotal">- R$ 20.000,00</span>
-                    </div>
-                    <div class="icone" style="background: rgba(229, 169, 60, 0.1); color: #e5a93c; padding: 10px; border-radius: 10px; font-size: 1.1rem;">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
+            <div class="sidebar-bottom">
+                <div class="profile">
+                    <span class="avatar" id="userAvatar">F</span>
+                    <span class="profile-copy"><strong id="userName">Meu espaço</strong><small>Conta pessoal</small></span>
                 </div>
             </div>
+        </aside>
 
-            <!-- Receitas (Lado a lado com Despesas) -->
-            <div class="cartao receitas">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span class="rotulo">Receitas</span>
-                        <span class="valor positivo" id="totalReceitas">R$ 0,00</span>
-                    </div>
-                    <div class="icone" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 10px; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-                        <i class="fa-solid fa-arrow-trend-up"></i>
-                    </div>
+        <main class="main-content">
+            <header class="topbar">
+                <a class="mobile-brand" href="#dashboard" data-view="dashboard" aria-label="FinGSEC, início"><img src="../../assets/img/baner.png" alt="FinGSEC"></a>
+                <div class="breadcrumb"><span>Finanças</span><i class="fa-solid fa-chevron-right"></i><strong id="breadcrumbCurrent">Visão geral</strong></div>
+                <div class="topbar-actions">
+                    <span class="today-label" id="todayLabel"></span>
+                    <button class="icon-button mobile-menu" type="button" id="mobileMenuButton" aria-label="Abrir navegação"><i class="fa-solid fa-bars"></i></button>
+                    <button class="button button-primary top-add" type="button" data-action="new-transaction"><i class="fa-solid fa-plus"></i><span>Nova transação</span></button>
                 </div>
-            </div>
+            </header>
 
-            <!-- Despesas (Lado a lado com Receitas) -->
-            <div class="cartao despesas">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span class="rotulo">Despesas</span>
-                        <span class="valor negativo" id="totalDespesas">R$ 20.000,00</span>
-                    </div>
-                    <div class="icone" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 10px; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-                        <i class="fa-solid fa-arrow-trend-down"></i>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- FORMULÁRIO DE NOVA TRANSAÇÃO -->
-        <section class="formulario">
-
-            <h2>Nova Transação</h2>
-
-            <form id="formTransacao">
-                
-                <!-- grupo-campos ativa o grid de 2 colunas no mobile para os inputs -->
-                <div class="grupo-campos">
-                    <div class="campo">
-                        <label for="tipo">Tipo</label>
-                        <select id="tipo" required>
-                            <option value="receita">Receita</option>
-                            <option value="despesa" selected>Despesa</option>
-                        </select>
-                    </div>
-
-                    <div class="campo">
-                        <label for="descricao">Descrição</label>
-                        <input type="text" id="descricao" placeholder="Ex: Salário, Aluguel..." required>
-                    </div>
-
-                    <div class="campo">
-                        <label for="valor">Valor (R$)</label>
-                        <input type="number" id="valor" placeholder="0,00" step="0.01" min="0.01" required>
-                    </div>
-
-                    <div class="campo">
-                        <label for="data">Data</label>
-                        <input type="date" id="data" required>
-                    </div>
-                </div>
-
-                <button class="btn-adicionar" type="submit">
-                    Adicionar Transação
-                </button>
-
-            </form>
-
-        </section>
-
-        <!-- GRÁFICOS (Alinhados em coluna única perfeita para Mobile) -->
-        <section class="graficos">
-
-            <div class="grafico-card">
-                <h2>Receitas x Despesas</h2>
-                <canvas id="graficoBarras"></canvas>
-            </div>
-
-            <div class="grafico-card">
-                <h2>Saldo Mensal</h2>
-                <canvas id="graficoLinha"></canvas>
-            </div>
-
-        </section>
-
-        <!-- LISTA DE TRANSAÇÕES -->
-        <section class="transacoes">
-
-            <div class="transacoes-header">
-                <h2>Transações Recentes</h2>
-                <a href="#" class="ver-todas">Ver todas <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></a>
-            </div>
-
-            <ul id="listaTransacoes">
-                <!-- Modelo de como o JS deve renderizar cada item para ficar igual à foto -->
-                <li class="item-transacao">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-arrow-down" style="font-size: 0.85rem;"></i>
+            <div class="page-content">
+                <section class="view-panel active" id="view-dashboard" aria-labelledby="pageTitle">
+                    <div class="page-heading">
+                        <div>
+                            <h1 id="pageTitle">Bom dia, <span id="greetingName">tudo bem?</span></h1>
+                            <p>Posição financeira e movimentações do período.</p>
                         </div>
-                        <div class="info-transacao">
-                            <span class="descricao-transacao">aluguel</span>
-                            <span class="data-transacao">20/07/2026</span>
+                        <div class="dashboard-period"><button class="icon-button" id="previousPeriod" aria-label="Período anterior" type="button">‹</button><label class="period-control"><i class="fa-regular fa-calendar"></i><span class="sr-only">Período dos gráficos</span>
+                            <select id="chartPeriod" aria-label="Período dos gráficos">
+                                <option value="month">Este mês</option>
+                                <option value="week">Esta semana</option>
+                                <option value="year">Este ano</option>
+                            </select><i class="fa-solid fa-chevron-down select-chevron"></i>
+                        </label><button class="icon-button" id="nextPeriod" aria-label="Próximo período" type="button">›</button><button class="text-button" id="resetPeriod" type="button">Hoje</button></div>
+                    </div>
+
+                    <p id="selectedPeriodLabel" class="period-caption" aria-live="polite"></p><section class="summary-grid" aria-label="Resumo financeiro">
+                        <article class="summary-card balance-card">
+                            <div class="summary-top"><span>Saldo total</span><span class="summary-icon gold-icon"><i class="fa-solid fa-wallet"></i></span></div>
+                            <strong class="summary-value" id="saldoTotal">R$ 0,00</strong>
+                            <div class="summary-foot"><span class="trend-pill neutral" id="balanceTrend"><i class="fa-solid fa-minus"></i> Sem movimentações</span><span class="summary-caption">realizado até hoje</span></div>
+                        </article>
+                        <article class="summary-card">
+                            <div class="summary-top"><span>Receitas do período</span><span class="summary-icon green-icon"><i class="fa-solid fa-arrow-down"></i></span></div>
+                            <strong class="summary-value" id="totalReceitas">R$ 0,00</strong>
+                            <div class="summary-foot"><span class="trend-pill neutral" id="incomeTrend"><i class="fa-solid fa-minus"></i> 0% vs. mês anterior</span><span class="summary-caption">entradas</span></div>
+                        </article>
+                        <article class="summary-card">
+                            <div class="summary-top"><span>Despesas do período</span><span class="summary-icon red-icon"><i class="fa-solid fa-arrow-up"></i></span></div>
+                            <strong class="summary-value" id="totalDespesas">R$ 0,00</strong>
+                            <div class="summary-foot"><span class="trend-pill neutral" id="expenseTrend"><i class="fa-solid fa-minus"></i> 0% vs. mês anterior</span><span class="summary-caption">saídas</span></div>
+                        </article>
+                        <article class="summary-card">
+                            <div class="summary-top"><span>Resultado do período</span><span class="summary-icon blue-icon"><i class="fa-solid fa-scale-balanced"></i></span></div>
+                            <strong class="summary-value" id="monthlyBalance">R$ 0,00</strong>
+                            <div class="summary-foot"><span class="summary-caption">receitas menos despesas</span><span class="mini-progress"><i id="monthProgress"></i></span></div>
+                        </article>
+                    </section>
+
+                    <section class="dashboard-grid">
+                        <article class="panel chart-panel">
+                            <div class="panel-heading">
+                                <div><h2>Fluxo de caixa</h2><p>Entradas e saídas no período</p></div>
+                                <span class="chart-legend"><i class="legend-dot income-dot"></i>Receitas <i class="legend-dot expense-dot"></i>Despesas</span>
+                            </div>
+                            <div class="chart-wrap"><canvas id="graficoBarras" aria-label="Gráfico de receitas e despesas"></canvas></div>
+                        </article>
+                        <article class="panel balance-chart-panel">
+                            <div class="panel-heading"><div><h2>Evolução do saldo</h2><p>Saldo acumulado ao longo do período</p></div></div>
+                            <div class="chart-wrap"><canvas id="graficoLinha" aria-label="Gráfico de evolução do saldo"></canvas></div>
+                        </article>
+                    </section>
+
+                    <section class="dashboard-grid lower-grid">
+                        <article class="panel transactions-panel">
+                            <div class="panel-heading">
+                                <div><h2>Atividade recente</h2><p>Suas últimas movimentações</p></div>
+                                <button class="text-button" type="button" data-view="transactions">Ver todas <i class="fa-solid fa-arrow-right"></i></button>
+                            </div>
+                            <ul class="transaction-list" id="recentTransactions"></ul>
+                            <div class="empty-state compact-empty" id="recentEmpty"><span class="empty-icon"><i class="fa-solid fa-receipt"></i></span><strong>Nenhuma movimentação ainda</strong><span>Adicione uma transação para começar.</span></div>
+                        </article>
+                        <article class="panel upcoming-panel">
+                            <div class="panel-heading"><div><h2>Próximos compromissos</h2><p>Contas a vencer e recorrências</p></div><button class="text-button" type="button" data-view="planning">Planejar <i class="fa-solid fa-arrow-right"></i></button></div>
+                            <div id="upcomingList" class="upcoming-list"></div>
+                            <div class="empty-state compact-empty" id="upcomingEmpty"><span class="empty-icon"><i class="fa-regular fa-calendar-check"></i></span><strong>Tudo em dia por aqui</strong><span>Cadastre uma conta no planejamento.</span></div>
+                        </article>
+                    </section>
+                </section>
+
+                <section class="view-panel" id="view-transactions">
+                    <div class="page-heading">
+                        <div><span class="eyebrow">MOVIMENTAÇÕES</span><h1>Transações</h1><p>Um histórico claro de cada entrada e saída.</p></div>
+                        <button class="button button-primary" type="button" data-action="new-transaction"><i class="fa-solid fa-plus"></i> Nova transação</button>
+                    </div>
+                    <article class="panel transaction-manager">
+                        <div class="filter-bar">
+                            <label class="search-control"><i class="fa-solid fa-magnifying-glass"></i><input id="searchTransactions" type="search" placeholder="Buscar transação..." aria-label="Buscar transação"></label>
+                            <select id="filterType" aria-label="Filtrar por tipo"><option value="">Todos os tipos</option><option value="receita">Receitas</option><option value="despesa">Despesas</option></select>
+                            <select id="filterCategory" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
+                            <label class="filter-date"><span>De</span><input id="filterFrom" type="date" aria-label="Data inicial"></label>
+                            <label class="filter-date"><span>Até</span><input id="filterTo" type="date" aria-label="Data final"></label>
+                            <label class="filter-value"><span>Mín. R$</span><input id="filterMin" type="number" min="0" step="0.01" placeholder="0,00" aria-label="Valor mínimo"></label>
+                            <label class="filter-value"><span>Máx. R$</span><input id="filterMax" type="number" min="0" step="0.01" placeholder="—" aria-label="Valor máximo"></label>
+                            <button class="button button-quiet clear-filters" type="button" id="clearFilters">Limpar</button>
                         </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="valor-transacao despesa">- R$ 10.000,00</span>
-                        <button class="btn-excluir"><i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i></button>
-                    </div>
-                </li>
-                
-                <li class="item-transacao">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-solid fa-arrow-down" style="font-size: 0.85rem;"></i>
+                        <div class="table-scroll">
+                            <table class="transactions-table">
+                                <thead><tr><th>TRANSAÇÃO</th><th>CATEGORIA</th><th>DATA</th><th>TIPO</th><th class="amount-column">VALOR</th><th><span class="sr-only">Ações</span></th></tr></thead>
+                                <tbody id="listaTransacoes"></tbody>
+                            </table>
+                            <div class="empty-state" id="transactionEmpty"><span class="empty-icon"><i class="fa-solid fa-magnifying-glass"></i></span><strong>Nenhuma transação encontrada</strong><span>Experimente ajustar os filtros ou adicione uma movimentação.</span></div>
                         </div>
-                        <div class="info-transacao">
-                            <span class="descricao-transacao">aluguel</span>
-                            <span class="data-transacao">20/07/2026</span>
-                        </div>
+                        <div class="table-footer"><span id="transactionResults">0 transações</span><span>Dados salvos neste dispositivo</span></div>
+                    </article>
+                </section>
+
+                <section class="view-panel" id="view-categories">
+                    <div class="page-heading"><div><span class="eyebrow">ORGANIZAÇÃO</span><h1>Categorias</h1><p>Entenda para onde seu dinheiro está indo.</p></div></div>
+                    <div class="category-layout">
+                        <article class="panel category-panel"><div class="panel-heading"><div><h2>Despesas por categoria</h2><p>Distribuição no mês atual</p></div></div><div id="categoryBreakdown" class="category-breakdown"></div><div class="empty-state compact-empty" id="categoryEmpty"><span class="empty-icon"><i class="fa-solid fa-shapes"></i></span><strong>Sem despesas categorizadas</strong><span>Elas aparecerão aqui assim que você registrar transações.</span></div></article>
+                        <article class="panel category-list-panel"><div class="panel-heading"><div><h2>Suas categorias</h2><p>Escolha uma ao registrar cada transação.</p></div></div>
+                            <form id="categoryForm" class="inline-create"><label for="newCategoryName" class="sr-only">Nome da nova categoria</label><input id="newCategoryName" type="text" maxlength="24" placeholder="Nova categoria..." required><button class="button button-primary" type="submit" aria-label="Adicionar categoria"><i class="fa-solid fa-plus"></i></button></form>
+                            <div id="categoryList" class="category-list"></div>
+                        </article>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="valor-transacao despesa">- R$ 10.000,00</span>
-                        <button class="btn-excluir"><i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i></button>
+                </section>
+
+                <section class="view-panel" id="view-planning">
+                    <div class="page-heading"><div><span class="eyebrow">ORGANIZE-SE</span><h1>Planejamento</h1><p>Antecipe seus compromissos e cuide do orçamento do mês.</p></div></div>
+                    <div class="planning-grid">
+                        <article class="panel budget-panel"><div class="panel-heading"><div><h2>Orçamento mensal</h2><p>Defina limites para cada categoria.</p></div><span class="month-tag" id="budgetMonth"></span></div><p id="expenseComposition" class="budget-composition"></p><div id="budgetList" class="budget-list"></div><div class="empty-state compact-empty" id="budgetEmpty"><span class="empty-icon"><i class="fa-solid fa-chart-pie"></i></span><strong>Monte seu primeiro orçamento</strong><span>Defina um limite mensal nas categorias abaixo.</span></div></article>
+                        <article class="panel bills-panel"><div class="panel-heading"><div><h2>Contas a pagar e receber</h2><p>Vencimentos próximos em um só lugar.</p></div></div>
+                            <form id="billForm" class="bill-form">
+                                <label class="field-label">Descrição<input id="billDescription" type="text" placeholder="Ex.: Conta de luz" maxlength="60" required></label>
+                                <div class="bill-fields"><label class="field-label">Tipo<select id="billType"><option value="despesa">A pagar</option><option value="receita">A receber</option></select></label><label class="field-label">Valor (R$)<input id="billAmount" type="number" min="0.01" step="0.01" placeholder="0,00" required></label><label class="field-label">Vencimento<input id="billDueDate" type="date" required></label></div>
+                                <button class="button button-primary" type="submit"><i class="fa-solid fa-plus"></i> Adicionar conta</button>
+                            </form>
+                            <div id="billList" class="bill-list"></div><div class="empty-state compact-empty" id="billEmpty"><span class="empty-icon"><i class="fa-regular fa-calendar"></i></span><strong>Nenhuma conta cadastrada</strong><span>Adicione compromissos para acompanhar os vencimentos.</span></div>
+                        </article>
                     </div>
-                </li>
-            </ul>
+                </section>
 
-            <!-- Mensagem caso não tenha nada (Controlada via JS) -->
-            <p class="vazio" id="mensagemVazia" style="display: none;">
-                Nenhuma transação registrada.
-            </p>
+                <section class="view-panel" id="view-goals">
+                    <div class="page-heading"><div><span class="eyebrow">SEU PRÓXIMO PASSO</span><h1>Metas financeiras</h1><p>Transforme planos em conquistas, um depósito de cada vez.</p></div></div>
+                    <article class="panel goals-panel"><div class="panel-heading"><div><h2>Suas metas</h2><p>Acompanhe o progresso das suas economias.</p></div></div>
+                        <form id="goalForm" class="goal-form"><label class="field-label">Nome da meta<input id="goalName" type="text" placeholder="Ex.: Viagem de férias" maxlength="60" required></label><label class="field-label">Valor desejado (R$)<input id="goalTarget" type="number" min="0.01" step="0.01" placeholder="10.000,00" required></label><label class="field-label">Já economizei (R$)<input id="goalSaved" type="number" min="0" step="0.01" placeholder="0,00" value="0"></label><button class="button button-primary" type="submit"><i class="fa-solid fa-plus"></i> Criar meta</button></form>
+                        <div id="goalList" class="goal-list"></div><div class="empty-state compact-empty" id="goalEmpty"><span class="empty-icon"><i class="fa-solid fa-bullseye"></i></span><strong>Qual é o seu próximo objetivo?</strong><span>Crie uma meta para visualizar seu progresso.</span></div>
+                    </article>
+                </section>
 
-        </section>
+                <section class="view-panel" id="view-settings">
+                    <div class="page-heading"><div><span class="eyebrow">PREFERÊNCIAS</span><h1>Configurações</h1><p>Personalize sua experiência no FinGSEC.</p></div></div>
+                    <article class="panel settings-panel"><div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-user"></i></div><div class="setting-copy"><strong>Como podemos chamar você?</strong><span>Seu nome aparece na saudação do painel.</span></div><form id="nameForm" class="setting-control"><input id="nameInput" type="text" maxlength="40" placeholder="Seu nome"><button class="button button-secondary" type="submit">Salvar</button></form></div>
+                        <div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-eye-slash"></i></div><div class="setting-copy"><strong>Ocultar valores</strong><span>Esconda os valores financeiros na tela.</span></div><label class="toggle-control"><input id="privacyToggle" type="checkbox"><span class="toggle-track"></span></label></div>
+                        <div class="setting-row"><div class="setting-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="setting-copy"><strong>Seus dados ficam no dispositivo</strong><span>As transações ficam neste navegador. Exporte uma cópia para guardar seu histórico.</span></div><button class="button button-secondary" id="exportData" type="button">Exportar dados</button></div>
+                    </article>
+                </section>
 
-        <!-- FOOTER DA IMAGEM -->
-        <footer style="display: flex; justify-content: space-between; align-items: center; padding: 20px 4px; color: #666; font-size: 0.75rem;">
-            <span><i class="fa-regular fa-shield-check" style="color: #e5a93c; margin-right: 4px;"></i> Suas finanças, seu futuro.</span>
-            <span style="color: #e5a93c; opacity: 0.8;">Controle hoje, conquiste amanhã.</span>
-        </footer>
-
+                <footer class="app-footer"><span><i class="fa-solid fa-shield-halved"></i> Suas finanças, no seu ritmo.</span><span>FinGSEC <i class="fa-regular fa-copyright"></i> <span id="footerYear"></span></span></footer>
+            </div>
+        </main>
     </div>
 
-    <!-- Script Principal -->
-    <script src="main.js"></script>
-
+    <div class="modal-backdrop" id="transactionModal" aria-hidden="true">
+        <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+            <div class="modal-heading"><div><span class="eyebrow">MOVIMENTAÇÃO</span><h2 id="formTitle">Nova transação</h2></div><button class="icon-button" id="closeTransactionModal" type="button" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button></div>
+            <form id="formTransacao">
+                <div class="transaction-type-switch" role="group" aria-label="Tipo de transação"><button type="button" class="type-option active" data-type="despesa"><i class="fa-solid fa-arrow-up"></i> Despesa</button><button type="button" class="type-option" data-type="receita"><i class="fa-solid fa-arrow-down"></i> Receita</button><input id="tipo" type="hidden" value="despesa"></div>
+                <div class="form-grid">
+                    <label class="field-label field-wide">Descrição<input type="text" id="descricao" placeholder="Ex.: Mercado, salário..." maxlength="80" required></label>
+                    <label class="field-label">Valor (R$)<input type="number" id="valor" placeholder="0,00" min="0.01" step="0.01" required></label>
+                    <label class="field-label">Data<input type="date" id="data" required></label>
+                    <label class="field-label field-wide">Categoria<select id="categorySelect" required></select></label>
+                    <label class="field-label field-wide">Natureza<select id="expenseNature"><option value="variavel">Variável</option><option value="fixa">Fixa</option></select></label>
+                    <label class="field-label field-wide">Observação <span class="optional-label">opcional</span><input type="text" id="transactionNote" maxlength="120" placeholder="Um detalhe para lembrar depois"></label>
+                </div>
+                <div class="schedule-options" id="scheduleOptions">
+                    <label class="check-row"><input id="recurringInput" type="checkbox"><span class="check-mark"></span><span><strong>Repetir mensalmente</strong><small>Confirme cada vencimento no painel para registrar a recorrência.</small></span></label>
+                    <label class="check-row" id="installmentToggle"><input id="installmentInput" type="checkbox"><span class="check-mark"></span><span><strong>Dividir em parcelas</strong><small>Informe o valor total; parcelas futuras ficam agendadas.</small></span></label>
+                    <label class="field-label installment-count" id="installmentCountWrap" hidden>Número de parcelas<input id="installmentCount" type="number" min="2" max="60" value="2"></label>
+                </div>
+                <div class="form-actions"><button class="button button-secondary" id="cancelTransaction" type="button">Cancelar</button><button class="button button-primary" id="submitTransaction" type="submit"><i class="fa-solid fa-check"></i> Salvar transação</button></div>
+            </form>
+        </section>
+    </div>
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
 </body>
 
 </html>

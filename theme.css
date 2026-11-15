@@ -1,0 +1,20 @@
+/* FinGSEC: cores, tipografia e controles compartilhados. */
+:root {
+    color-scheme: dark;
+    --fin-background: #000;
+    --fin-surface: #101010;
+    --fin-field: #171717;
+    --fin-line: #2b2925;
+    --fin-text: #eeeae2;
+    --fin-muted: #aaa69e;
+    --fin-gold: #d4af57;
+    --fin-font: 'Segoe UI', Arial, sans-serif;
+}
+button, input, select { font-family: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--fin-gold);
+    outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
