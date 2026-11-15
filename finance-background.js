@@ -20,21 +20,5 @@
             <path class="finance-secondary" d="M-80 320L80 350 220 290 350 330 490 240 620 280 760 190 900 225 1040 150 1200 200 1370 110 1680 140"/>
         </g>
     </svg>`;
-    const control = document.createElement('button');
-    control.type = 'button';
-    control.className = 'finance-motion-control';
-    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let paused = preference.matches;
-    function update() {
-        layer.classList.toggle('motion-paused', paused || document.hidden);
-        control.textContent = paused ? 'Animar fundo' : 'Pausar fundo';
-        control.setAttribute('aria-pressed', String(paused));
-        control.setAttribute('aria-label', paused ? 'Ativar animação decorativa do fundo' : 'Pausar animação decorativa do fundo');
-    }
-    control.addEventListener('click', () => { paused = !paused; update(); });
-    preference.addEventListener('change', event => { paused = event.matches; update(); });
-    document.addEventListener('visibilitychange', update);
     document.body.prepend(layer);
-    document.body.append(control);
-    update();
 })();

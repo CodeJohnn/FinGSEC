@@ -21,12 +21,8 @@ body { isolation: isolate; }
 .finance-line { opacity: .19; }
 .finance-secondary { opacity: .10; }
 .finance-trace { opacity: .42; stroke-width: 1.6; stroke-dasharray: 8 92; animation: finance-flow 32s linear infinite; }
-.finance-motion-control { position: fixed; right: 14px; bottom: 12px; z-index: 19; min-height: 32px; padding: 6px 10px; border: 1px solid #393125; border-radius: 3px; background: #0b0b0b; color: #b5a47b; font: 11px var(--fin-font); cursor: pointer; }
-.finance-motion-control:hover { color: #eee0bd; border-color: #76613c; }
-.motion-paused .finance-trace { animation-play-state: paused; }
 @keyframes finance-flow { to { stroke-dashoffset: -100; } }
 @media (max-width: 620px) {
-    .app-shell ~ .finance-motion-control { bottom: calc(78px + env(safe-area-inset-bottom)); }
     .finance-candles { opacity: .09; }
     .finance-trace { opacity: .28; }
 }
@@ -36,4 +32,5 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    .finance-backdrop .finance-trace { animation: finance-flow 32s linear infinite !important; }
 }
